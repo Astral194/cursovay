@@ -1,0 +1,114 @@
+{% load static %}
+{% load django_bootstrap5 %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    {% bootstrap_css %}
+    <style>
+        .table-link {
+            display: inline-block;
+            margin-right: 15px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            color: #333;
+            background: #f2f2f2;
+        }
+
+        .table-link:hover {
+            background: #e4e4e4;
+        }
+
+        .user-box {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+    </style>
+</head>
+<body class="container mt-4">
+
+{% if current_user %}
+<div class="user-box d-flex justify-content-between align-items-center">
+    <div>
+        <h5 class="mb-1">Вы вошли как:</h5>
+        <strong>{{ current_user.full_name }}</strong><br>
+        <small>Email: {{ current_user.email }}</small><br>
+        <small>Роль: {{ current_user.role }}</small><br>
+    </div>
+
+    <div>
+        <a href="{% url 'logout' %}" class="btn btn-danger">Выйти</a>
+
+        {% if current_user.role == "admin" %}
+        <a href="{% url 'add_employee' %}?role=admin" class="btn btn-primary">Добавить админа</a>
+        <a href="{% url 'add_employee' %}?role=doctor" class="btn btn-success">Добавить врача</a>
+        <a href="{% url 'export_excel' %}" class="btn btn-info">Скачать все таблицы Excel</a>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- ======= СПИСОК ТАБЛИЦ ======= -->
+<h2>Доступные таблицы</h2>
+
+<div class="mb-4 mt-3">
+    {% for table in tables %}
+    <a href="?table={{ table }}"
+       class="table-link {% if selected_table == table %}active-table{% endif %}">
+        {{ table }}
+    </a>
+    {% endfor %}
+</div>
+
+<hr>
+
+<!-- ======= ТАБЛИЦА ДАННЫХ ======= -->
+{% if selected_table %}
+<h3>Таблица: {{ selected_table }}</h3>
+
+<table class="table table-bordered table-striped mt-3">
+    <thead class="table-light">
+    <tr>
+        {% for col in columns %}
+        <th>{{ col }}</th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for row in table_data %}
+    <tr>
+        {% for col in columns %}
+        <td>{{ row|get_item:col }}</td>
+        {% endfor %}
+        {% if current_user.role == "admin" %}
+            <td>
+                {% if selected_table == "doctors" %}
+                    <a href="{% url 'edit_row' table=selected_table row_id=row.user_id %}"
+                    class="btn btn-sm btn-warning">Изменить</a>
+                {% elif selected_table != "aliases" %}
+                    <a href="{% url 'edit_row' table=selected_table row_id=row.id %}"
+                    class="btn btn-sm btn-warning">Изменить</a>
+                {% endif %}
+                <form method="post" action="{% url 'delete_row' %}" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="table" value="{{ selected_table }}">
+                    <input type="hidden" name="row_id" value="{{ row.id }}">
+                    <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
+                </form>
+            </td>
+        {% endif %}
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Выберите таблицу выше.</p>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
