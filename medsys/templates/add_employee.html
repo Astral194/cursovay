@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Добавить {% if role == 'admin' %}админа{% else %}врача{% endif %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container mt-5">
+    <h2>Добавить {% if role == 'admin' %}администратора{% else %}врача{% endif %}</h2>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="role" value="{{ role }}">
+        {% for field in form %}
+        <p>
+            {{ field.label_tag }}
+            {{ field }}
+            {% if field.errors %}
+                <div class="text-danger">{{ field.errors }}</div>
+            {% endif %}
+        </p>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Создать</button>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary">Отмена</a>
+    </form>
+</div>
+</body>
+</html>
