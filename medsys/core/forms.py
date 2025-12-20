@@ -20,22 +20,22 @@ class AddAdminForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if email and SystemUser.objects.filter(email=email).exists():  # замените User на вашу модель, если нужно
+        if email and SystemUser.objects.filter(email=email).exists():
             raise forms.ValidationError("Пользователь с таким email уже существует.")
         return email
 
 class AddDoctorForm(forms.ModelForm):
     specialization = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите специализацию"})
     )
     license_number = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите license_number"})
     )
     phone = forms.CharField(
         required=False,
-        widget=forms.TextInput(attrs={"class": "form-control"})
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите номер телефона"})
     )
 
     class Meta:
@@ -49,7 +49,7 @@ class AddDoctorForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if email and SystemUser.objects.filter(email=email).exists():  # замените User на вашу модель, если нужно
+        if email and SystemUser.objects.filter(email=email).exists():
             raise forms.ValidationError("Пользователь с таким email уже существует.")
         return email
 

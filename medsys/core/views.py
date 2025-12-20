@@ -19,13 +19,17 @@ from .models import (
     Medication,
     LabTest,
     ActionLog,
+    EncryptionKey
 )
+
+from .constants import ADD_ALLOWED_TABLES
 
 TABLES = {
     "system_users": SystemUser,
     "doctors": Doctor,
     "patients": Patient,
     "aliases": Alias,
+    "encryption_keys": EncryptionKey,
     "visits": Visit,
     "medical_records": MedicalRecord,
     "diagnoses": Diagnosis,
@@ -105,7 +109,8 @@ def dashboard(request):
 
     available_tables = list(TABLES.keys())
     if user.role == "doctor":
-        for forbidden in ("patients", "aliases", "action_logs"):
+        for forbidden in ("patients", "aliases",
+                          "action_logs", "encryption_keys"):
             if forbidden in available_tables:
                 available_tables.remove(forbidden)
 
@@ -142,7 +147,8 @@ def dashboard(request):
         "columns": columns,
         "current_user": user,
         "form_admin": add_admin_form,
-        "form_doctor": add_doctor_form
+        "form_doctor": add_doctor_form,
+        "ADD_ALLOWED_TABLES": ADD_ALLOWED_TABLES
     })
 
 
@@ -266,6 +272,10 @@ def edit_row(request, table, row_id):
     else:
         row = get_object_or_404(model, id=row_id)
 
+    doctors = Doctor.objects.all()
+    aliases = Alias.objects.all()
+    visits = Visit.objects.all()
+
     if request.method == "POST":
         for field in model._meta.fields:
             name = field.name
@@ -274,14 +284,15 @@ def edit_row(request, table, row_id):
                 continue
 
             value = request.POST.get(name)
+            print(value)
 
-            if hasattr(field, "related_model") and field.related_model and value:
-                try:
-                    fk_instance = field.related_model.objects.get(pk=int(value))
-                    setattr(row, name, fk_instance)
-                except (field.related_model.DoesNotExist, ValueError, TypeError):
-                    pass
-            else:
+            if name == "doctor" and value:
+                row.doctor_id = int(value)
+            elif name == "alias" and value:
+                row.alias_id = int(value)
+            elif name == "visit" and value:
+                row.visit_id = int(value)
+            elif value not in ("", None):
                 setattr(row, name, value)
 
         row.save()
@@ -306,7 +317,10 @@ def edit_row(request, table, row_id):
                    "table": table,
                    "row_id": row_id,
                    "role_choices": role_choices,
-                   "status_choices": status_choices,})
+                   "status_choices": status_choices,
+                   "doctors": doctors,
+                   "aliases": aliases,
+                   "visits": visits, })
 
 
 @login_required
@@ -324,3 +338,65 @@ def delete_row(request):
             obj.delete()
 
     return redirect("dashboard")
+
+
+@login_required
+def add_row(request, table):
+    user = SystemUser.objects.get(id=request.session["user_id"])
+
+    if user.role != "admin":
+        return redirect("dashboard")
+
+    if table not in ADD_ALLOWED_TABLES:
+        return redirect("dashboard")
+
+    model = TABLES.get(table)
+    if not model:
+        return redirect("dashboard")
+
+    doctors = Doctor.objects.all()
+    aliases = Alias.objects.all()
+    visits = Visit.objects.all()
+
+    if request.method == "POST":
+        obj = model()
+
+        for field in model._meta.fields:
+            name = field.name
+
+            if name in ("id", "created_at", "updated_at", "hashed_password"):
+                continue
+
+            value = request.POST.get(name)
+            if not value:
+                continue
+
+            # ForeignKey — сохраняем через *_id
+            if field.is_relation and field.many_to_one:
+                setattr(obj, f"{name}_id", value)
+            else:
+                setattr(obj, name, value)
+
+        obj.save()
+        return redirect(f"/dashboard/?table={table}")
+
+    fields = []
+    status_choices = None
+
+    for field in model._meta.fields:
+        if field.name in ("id", "created_at", "updated_at"):
+            continue
+
+        fields.append(field.name)
+
+        if field.name == "status":
+            status_choices = field.choices
+
+    return render(request, "add_row.html", {
+        "table": table,
+        "fields": fields,
+        "status_choices": status_choices,
+        "doctors": doctors,
+        "aliases": aliases,
+        "visits": visits,
+    })

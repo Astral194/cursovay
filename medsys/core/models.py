@@ -142,6 +142,7 @@ class Visit(models.Model):
 
     class Meta:
         db_table = 'visits'
+        ordering = ['-visit_date']
 
     def __str__(self):
         return f"{self.id}"

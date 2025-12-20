@@ -13,8 +13,32 @@
     {% for name, value in fields.items %}
     <div class="mb-3">
         <label class="form-label">{{ name }}</label>
+        {% if name == "doctor" %}
+        <select name="doctor" class="form-select" required>
+            {% for doc in doctors %}
+            <option value="{{ doc.user_id }}" {% if value.user_id == doc.user_id %}selected{% endif %}>
+                {{ doc.last_name }} {{ doc.first_name }} ({{ doc.specialization }})
+            </option>
+            {% endfor %}
+        </select>
 
-        {% if name == "role" and role_choices %}
+        {% elif name == "alias" %}
+        <select name="alias" class="form-select" required>
+            {% for a in aliases %}
+            <option value="{{ a.id }}" {% if value.id == a.id %}selected{% endif %}>
+                {{ a.id }}
+            </option>
+            {% endfor %}
+        </select>
+        {% elif name == "visit" %}
+        <select name="visit" class="form-select" required>
+            {% for v in visits %}
+            <option value="{{ v.id }}" {% if value.id == v.id %}selected{% endif %}>
+                {{ v.id }}
+            </option>
+            {% endfor %}
+        </select>
+        {% elif name == "role" and role_choices %}
         <select name="role" class="form-select">
             {% for val, label in role_choices %}
             <option value="{{ val }}" {% if val == value %}selected{% endif %}>
@@ -33,6 +57,10 @@
         {% elif name == "birth_date" %}
         <input type="date" name="birth_date" value="{{ value|date:'Y-m-d' }}" class="form-control">
         {% elif name == "visit_date" %}
+        <input type="datetime-local" name="{{ name }}" value="{{ value|date:'Y-m-d\TH:i' }}" class="form-control">
+        {% elif name == "result_at" %}
+        <input type="datetime-local" name="{{ name }}" value="{{ value|date:'Y-m-d\TH:i' }}" class="form-control">
+        {% elif name == "ordered_at" %}
         <input type="datetime-local" name="{{ name }}" value="{{ value|date:'Y-m-d\TH:i' }}" class="form-control">
         {% else %}
         <input type="text" name="{{ name }}" value="{{ value }}" class="form-control">

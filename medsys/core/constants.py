@@ -10,3 +10,13 @@ STATUS_CHOICES = (
         ('completed', 'Completed'),
         ('cancelled', 'Cancelled'),
     )
+ADD_ALLOWED_TABLES = {
+    "patients",
+    "visits",
+    "medical_records",
+    "lab_tests",
+    "diagnoses",
+    "prescriptions",
+    "medications",
+    "prescription_medications",
+}
