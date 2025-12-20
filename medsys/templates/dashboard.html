@@ -103,7 +103,11 @@
                 <form method="post" action="{% url 'delete_row' %}" style="display:inline;">
                     {% csrf_token %}
                     <input type="hidden" name="table" value="{{ selected_table }}">
-                    <input type="hidden" name="row_id" value="{{ row.id }}">
+                    {% if selected_table == "doctors" %}
+                        <input type="hidden" name="row_id" value="{{ row.user_id }}">
+                    {% elif selected_table != "doctors" %}
+                        <input type="hidden" name="row_id" value="{{ row.id }}">
+                    {% endif %}
                     <button type="submit" class="btn btn-sm btn-danger">Удалить</button>
                 </form>
             </td>

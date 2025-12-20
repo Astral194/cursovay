@@ -28,7 +28,7 @@ class SystemUser(models.Model):
 
 
     def __str__(self):
-        return f"{self.full_name or self.email}"
+        return f"{self.id}"
 
 
 
@@ -39,7 +39,8 @@ class Patient(models.Model):
     phone = models.TextField(unique=True, blank=True, null=True,
                              validators=[
                                  RegexValidator(
-                                     regex=REGEX_PHONE_PATTERN
+                                     regex=REGEX_PHONE_PATTERN,
+                                     message="Введите корректный номер в формате 81234567891 или +71234567891"
                                  )
                              ]
                              )
@@ -108,7 +109,8 @@ class Doctor(models.Model):
     phone = models.TextField(unique=True, blank=True, null=True,
                              validators=[
                                  RegexValidator(
-                                     regex=REGEX_PHONE_PATTERN
+                                     regex=REGEX_PHONE_PATTERN,
+                                     message="Введите корректный номер в формате 81234567891 или +71234567891"
                                  )
                              ]
                              )

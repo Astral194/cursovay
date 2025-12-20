@@ -236,7 +236,6 @@ def export_excel(request):
                 row.append(val)
             ws.append(row)
 
-        # автоширина колонок
         for i, column in enumerate(ws.columns, start=1):
             max_length = 0
             for cell in column:
@@ -272,10 +271,6 @@ def edit_row(request, table, row_id):
     else:
         row = get_object_or_404(model, id=row_id)
 
-    doctors = Doctor.objects.all()
-    aliases = Alias.objects.all()
-    visits = Visit.objects.all()
-
     if request.method == "POST":
         for field in model._meta.fields:
             name = field.name
@@ -284,7 +279,6 @@ def edit_row(request, table, row_id):
                 continue
 
             value = request.POST.get(name)
-            print(value)
 
             if name == "doctor" and value:
                 row.doctor_id = int(value)
@@ -292,11 +286,17 @@ def edit_row(request, table, row_id):
                 row.alias_id = int(value)
             elif name == "visit" and value:
                 row.visit_id = int(value)
-            elif value not in ("", None):
+            elif name == "user" and value:
+                row.visit_id = int(value)
+            else:
                 setattr(row, name, value)
 
         row.save()
-        return redirect("dashboard")
+        return redirect("/dashboard/?table={table}")
+
+    doctors = Doctor.objects.all()
+    aliases = Alias.objects.all()
+    visits = Visit.objects.all()
 
     fields = {}
     role_choices = None
@@ -320,7 +320,7 @@ def edit_row(request, table, row_id):
                    "status_choices": status_choices,
                    "doctors": doctors,
                    "aliases": aliases,
-                   "visits": visits, })
+                   "visits": visits,})
 
 
 @login_required
@@ -334,7 +334,10 @@ def delete_row(request):
         row_id = request.POST.get("row_id")
         model = TABLES.get(table)
         if model:
-            obj = get_object_or_404(model, id=row_id)
+            if table == "doctors":
+                obj = get_object_or_404(model, user_id=row_id)
+            else:
+                obj = get_object_or_404(model, id=row_id)
             obj.delete()
 
     return redirect("dashboard")

@@ -1,4 +1,3 @@
-# app/forms.py
 from django import forms
 from .models import SystemUser, Doctor
 
@@ -26,16 +25,15 @@ class AddAdminForm(forms.ModelForm):
 
 class AddDoctorForm(forms.ModelForm):
     specialization = forms.CharField(
-        required=False,
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите специализацию"})
     )
     license_number = forms.CharField(
-        required=False,
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите license_number"})
     )
     phone = forms.CharField(
-        required=False,
-        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите номер телефона"})
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Введите номер телефона",
+                                      "pattern": "(\+7|8)[0-9]{10}",
+                                      "title":"Введите корректный номер в формате 81234567891 или +71234567891"})
     )
 
     class Meta:
