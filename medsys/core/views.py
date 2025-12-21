@@ -109,7 +109,7 @@ def dashboard(request):
 
     available_tables = list(TABLES.keys())
     if user.role == "doctor":
-        for forbidden in ("patients", "aliases",
+        for forbidden in ("patients",
                           "action_logs", "encryption_keys"):
             if forbidden in available_tables:
                 available_tables.remove(forbidden)
@@ -258,7 +258,7 @@ def export_excel(request):
 @login_required
 def edit_row(request, table, row_id):
     model = TABLES.get(table)
-    if not model:
+    if not model or table == "action_logs":
         return redirect("dashboard")
 
     user = SystemUser.objects.get(id=request.session["user_id"])
@@ -347,7 +347,7 @@ def delete_row(request):
 def add_row(request, table):
     user = SystemUser.objects.get(id=request.session["user_id"])
 
-    if user.role != "admin":
+    if user.role != "admin" or table == "action_logs":
         return redirect("dashboard")
 
     if table not in ADD_ALLOWED_TABLES:

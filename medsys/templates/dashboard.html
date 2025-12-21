@@ -91,7 +91,7 @@
         {% for col in columns %}
         <td>{{ row|get_item:col }}</td>
         {% endfor %}
-        {% if current_user.role == "admin" %}
+        {% if current_user.role == "admin" and selected_table != "action_logs"%}
             <td>
                 {% if selected_table == "doctors" %}
                     <a href="{% url 'edit_row' table=selected_table row_id=row.user_id %}"
